@@ -1,0 +1,335 @@
+#@layout()
+#define main()
+<div class="col jf-page-main jf-pdl0">
+	<table id="table1" cellspacing="0px">
+		<tr class="tableTitle" align="center">
+			<td class="col1">code</td>
+			<td class="col1">状态</td>
+			<td class="col1">买入价格</td>
+			<td class="col1">卖出价格</td>
+			<td class="col1">经历天数</td>
+			<td class="col1">创建时间</td>
+			<td >操作详情</td>
+		</tr>
+
+		#for(x : page.list)
+		<tr class="table2Tr">
+			<td class="table2Td1" ><a href="http://stockpage.10jqka.com.cn/#(x.codeTrim)/" target="_blank" >#(x.codeTrim)</a> </td>
+			<td class="table2Td1">#(x.statusText)</td>
+			<td class="table2Td1"><font color="green">#number(x.buyPrice,"#.###")</font></td>
+			<td class="table2Td1"><font color="red">#number(x.sellPrice,"#.###")</font></td>
+			<td class="table2Td1">#(x.duration)天</td>
+			<td class="table2Td1">#date(x.createTime,"yyyy-MM-dd")</td>
+			<td class="table2Td1">
+				<div>
+					当前价格:#number(x.currentPrice,"#.###"),
+
+					#if(x.sellPct != null && x.sellPct < 0)
+						离卖出:<font color="red">#number(x.sellPct,"#.##")%</font>,
+					#else
+						离卖出:#number(x.sellPct,"#.##")%,
+					#end
+
+					#if(x.buyPct != null && x.buyPct < 0)
+						离买入:<font color="green">#number(x.buyPct,"#.##")%</font>
+					#else
+						离买入:#number(x.buyPct,"#.##")%
+					#end
+
+				</div>
+				#set(opLogPage = x.opLogPage)
+				#if(x.opLogPage != null)
+				<div>
+					操作日志:
+					<ul>
+						#for(log : opLogPage.list)
+						<li>[#date(log.time,"MM-dd hh:mm")]:#(log.info)</li>
+						#end
+					</ul>
+				</div>
+				#end
+			</td>
+		</tr>
+		#end
+
+	</table>
+<!--	<div id="lowerLbl" align="center">
+		<p>共</p>
+		<p id="rowsNum">0</p>
+		<p>条</p>
+		<select id="sel" onclick="pagination()">
+			<option id="opt0" value="10">10条/页</option>
+			<option id="opt1" value="20">20条/页</option>
+			<option id="opt2" value="50">50条/页</option>
+		</select>
+		&nbsp;
+		<button onclick="last()"><</button>
+		<button id="pno" style="background-color: #5899ce; color: white">1</button>
+		<button onclick="next()">></button>
+		&nbsp;
+		<p>前往</p>
+		<input type="text" id="gopg" onclick="gopage()" />
+		<p>页</p>
+	</div>-->
+
+</div>
+
+#end
+
+#define css()
+<style>
+ /*总一*/
+#total1
+{
+    margin: 0 auto;
+    width: 1400px;
+    border-top: 5px solid #F0F2F5;
+    border-bottom: 50px solid #F0F2F5;
+    border-left: 1px solid #F0F2F5;
+    border-right: 1px solid #F0F2F5;
+    display: block;
+}
+/*头*/
+.top
+{
+    height: 35px;
+    border-bottom: 1px solid #F0F2F5;
+    padding-left: 25px;
+    padding-top: 15px;
+    /*border: solid;*/
+}
+/*主体*/
+.main
+{
+    padding-top: 15px;
+    padding-left: 25px;
+    padding-right: 25px;
+    padding-bottom: 30px;
+}
+/*多选（模板名称……）*/
+.sel
+{
+    color: darkslategrey;
+    padding-left: 10px;
+    padding-top: 5px;
+    height: 35px;
+    width: 140px;
+    background-color: #F0F2F5;
+    border-radius: 5px 0px 0px 5px;
+    border: 1px solid lightgrey;
+}
+/*多选之后的那个输入框*/
+.inp
+{
+    margin-left: -8px;
+    padding-left: 10px;
+    padding-top: 5px;
+    height: 27px;
+    width: 180px;
+    border: 1px solid lightgrey;
+    margin-bottom: 15px;
+}
+/*那个蓝色的Q*/
+#qstnMark
+{
+    height: 36px;
+    width: 55px;
+    display: inline-block;
+    background-color: #5899ce;
+    color: white;
+    padding-top: 4px;
+    padding-bottom: 2px;
+    margin-left: -8px;
+    border-radius: 0px 5px 5px 0px;
+    border: 1px solid lightgrey;
+    text-align: center;
+    font-family: 'Calibri Light';
+    font-weight: lighter;
+}
+/*新增模板文件按钮*/
+#addTmplFile
+{
+    float: right;
+    color: white;
+    padding-left: 10px;
+    padding-top: 5px;
+    height: 35px;
+    width: 120px;
+    background-color: #5899ce;
+    border-radius: 5px;
+    border: none;
+}
+/*第一张表*/
+#table1
+{
+    border: 1px lightgrey solid;
+    width: 100%;
+}
+/*表头*/
+.tableTitle
+{
+    background-color: lightsteelblue;
+    font-weight: bold;
+}
+/*第一张表中的单元格格式*/
+#table1 td
+{
+    height: 35px;
+    border: 1px lightgrey solid;
+}
+/*第一列格式*/
+.col1
+{
+    width: 80px;
+}
+/*第二列格式*/
+.col2
+{
+    width: 100px;
+}
+/*第三列格式*/
+.col3
+{
+    width: 170px;
+}
+/*第四列格式*/
+.col4
+{
+    width: 170px;
+}
+/*第五列格式*/
+.col5
+{
+    width: 250px;
+}
+/*第一张表中最下面的表格导航*/
+#lowerLbl
+{
+    padding-top: 30px;
+}
+/*第一张表中最下面的表格导航中的p的格式*/
+#lowerLbl p
+{
+    color: gray;
+    display: inline;
+}
+#lowerLbl select
+{
+    color: gray;
+    height: 25px;
+    width: 80px;
+    border-radius: 5px;
+    padding-left: 5px;
+    margin-left: 5px;
+}
+#lowerLbl button
+{
+    width: 25px;
+    height: 25px;
+    background-color: #F0F2F5;
+    color: gray;
+    padding-top: 2px;
+    border-radius: 5px;
+    border: none;
+}
+#lowerLbl input
+{
+    padding-top: 2px;
+    width: 35px;
+    height: 20px;
+    border-radius: 5px;
+    border: 1px solid gray;
+    text-align: center;
+}
+
+/*总二*/
+#total2
+{
+    margin: 0 auto;
+    width: 1400px;
+    border-top: 5px solid #F0F2F5;
+    border-bottom: 50px solid #F0F2F5;
+    border-left: 1px solid #F0F2F5;
+    border-right: 1px solid #F0F2F5;
+    display: none;
+}
+/*第二张表*/
+#table2
+{
+    border: none;
+    width: 1200px;
+}
+/*第二张表的行格式*/
+.table2Tr
+{
+    margin: 15px;
+    padding-top: 50px;
+}
+/*第二张表的第一种单元格格式*/
+.table2Td1
+{
+    padding-left:5px;
+    /*border: solid;*/
+    color: darkslategrey;
+}
+/*第二张表的第二种单元格格式*/
+.table2Td2
+{
+    width: 430px;
+    padding-left: 5px;
+    /*border: solid;*/
+}
+/*第二张表的第三种单元格格式*/
+.table2Td3
+{
+    padding-left: 5px;
+}
+/*第二张表中的输入框格式*/
+#table2 input
+{
+    width: 420px;
+    height: 25px;
+    border-radius: 5px;
+    border: 1px solid lightgrey;
+    padding-left: 15px;
+}
+/*第二张表中的p（段落）的格式*/
+#table2 p
+{
+    color: red;
+    display: inline;
+}
+/*提交的那个按钮*/
+#submit1
+{
+    height: 35px;
+    width: 80px;
+    border-radius: 5px;
+    color: white;
+    background-color: #5899ce;
+}
+#submit2
+{
+    height: 35px;
+    width: 80px;
+    border-radius: 5px;
+    color: white;
+    background-color: #5899ce;
+}
+/*编辑按钮*/
+#btn1
+{
+    color: blue;
+    background-color: white;
+    border: none;
+}
+/*删除按钮*/
+#btn2
+{
+    color: red;
+    background-color: white;
+    border: none;
+}
+</style>
+
+#end
